@@ -4,16 +4,18 @@ import math
 import constants
 
 class Character():
-    def __init__(self, x, y, animation_list):
+    def __init__(self, x, y, mob_animations, character_type):
+        self.character_type = character_type
         self.flip = False
+        self.animation_list = mob_animations[character_type]
         self.frameIndex = 0
         self.action = 0 #action 0 means idle; action 1 is running
         self.running = False
         self.update_time = pygame.time.get_ticks()
         self.rect = pygame.Rect(0, 0, 40, 40)
         self.rect.center = (x, y)
-        self.image = animation_list[self.action][self.frameIndex]
-        self.animation_list = animation_list
+        self.image = self.animation_list[self.action][self.frameIndex]
+
 
     def move(self, dx, dy):
         #checking if player is running
