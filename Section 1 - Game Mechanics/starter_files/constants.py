@@ -1,7 +1,9 @@
-FPS = 45
+FPS = 60
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+
+SCALE = 3
 
 #colors 
 WHITE = (255, 255, 255)
