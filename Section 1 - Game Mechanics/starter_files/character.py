@@ -70,5 +70,8 @@ class Character():
     def draw(self, surface):
         #flip direction if player changes direction
         flipped_image = pygame.transform.flip(self.image, self.flip, False)
-        surface.blit(flipped_image, self.rect)
+        if self.character_type == 0:
+            surface.blit(flipped_image, (self.rect.x, self.rect.y - constants.SCALE * constants.OFFSET))
+        else:
+            surface.blit(flipped_image, self.rect)
         pygame.draw.rect(surface, constants.WHITE, self.rect, 1)
