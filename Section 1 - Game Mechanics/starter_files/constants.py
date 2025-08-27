@@ -28,3 +28,10 @@ ARROW_SPEED = 10
 #player sprite offset
 OFFSET = 12
 
+TILE_SIZE = 16 * SCALE
+
+#number of tile types in tiles folder
+TILE_TYPES = 18
+
+ROWS = 150
+COLS = 150

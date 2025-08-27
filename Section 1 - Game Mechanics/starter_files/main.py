@@ -1,9 +1,13 @@
+import csv
+
 import pygame
+
 import constants
 from character import Character
 from constants import SCREEN_WIDTH
-from weapon import Weapon
 from items import Item
+from weapon import Weapon
+from world import World
 
 pygame.init()
 
@@ -16,6 +20,9 @@ pygame.display.set_caption("Dungeon Crawler")
 
 #system clock for frame rate
 clock = pygame.time.Clock()
+
+#define game variables
+level = 1
 
 #define player movement variables
 moving_left = False
@@ -49,6 +56,13 @@ red_potion = scale_img(pygame.image.load(f'assets/images/items/potion_red.png').
 #load weapon images
 bow_image = scale_img(pygame.image.load('assets/images/weapons/bow.png').convert_alpha(), constants.WEAPON_SCALE)
 arrow_image = scale_img(pygame.image.load('assets/images/weapons/arrow.png').convert_alpha(), constants.WEAPON_SCALE)
+
+#load tile map images
+tile_list = []
+for i in range(constants.TILE_TYPES):
+    tile_image = pygame.image.load(f'assets/images/tiles/{i}.png').convert_alpha()
+    tile_image = scale_img(tile_image, constants.SCALE)
+    tile_list.append(tile_image)
 
 #loading in all character images
 mob_animations = []
@@ -91,6 +105,22 @@ def draw_info():
 
     #show score
     draw_text(f"X{player.score}", font, SCREEN_WIDTH - 100 , 15 , constants.WHITE)
+
+
+#create empty tile list
+world_data = []
+for row in range(constants.ROWS):
+    r = [-1] * constants.COLS
+    world_data.append(r)
+#load in levels and create world
+with open(f"levels/level{level}_data.csv", newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',')
+    for x, row in enumerate(reader):
+        for y, tile in enumerate(row):
+            world_data[x][y] = int(tile)
+
+world = World()
+world.process_data(world_data, tile_list)
 
 #damage text class
 class DamageText(pygame.sprite.Sprite):
@@ -178,6 +208,7 @@ while run:
     item_group.update(player)
 
     #draw objects on screen
+    world.draw(screen)
     player.draw(screen)
     bow.draw(screen)
     for arrow in arrow_group:
