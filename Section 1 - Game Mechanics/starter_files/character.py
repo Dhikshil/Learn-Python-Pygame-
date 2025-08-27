@@ -4,13 +4,16 @@ import math
 import constants
 
 class Character():
-    def __init__(self, x, y, mob_animations, character_type):
+    def __init__(self, x, y, mob_animations, character_type, health):
         self.character_type = character_type
         self.flip = False
         self.animation_list = mob_animations[character_type]
         self.frameIndex = 0
         self.action = 0 #action 0 means idle; action 1 is running
         self.running = False
+        self.health = health
+        self.alive = True
+
         self.update_time = pygame.time.get_ticks()
         self.rect = pygame.Rect(0, 0, 40, 40)
         self.rect.center = (x, y)
@@ -40,8 +43,13 @@ class Character():
     def update(self):
         animation_cooldown = 70
 
+        #check if character is still alivc
+        if self.health <= 0:
+            self.health = 0
+            self.alive = False
+
         #check action being performed by player
-        if self.running == True:
+        if self.running:
             self.update_action(1) #1 means player is running
         else:
             self.update_action(0) #0 means player is idle
@@ -58,6 +66,7 @@ class Character():
         #check if animation has finished
         if self.frameIndex >= len(self.animation_list[self.action]):
             self.frameIndex = 0
+
 
     def update_action(self, new_action):
         #checking if the new action is different to the previous action
