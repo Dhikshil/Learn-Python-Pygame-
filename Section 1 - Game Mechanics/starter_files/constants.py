@@ -13,7 +13,11 @@ WHITE = (255, 255, 255)
 
 BG = (40, 25, 25)
 
+#player speed
 SPEED = 5
+
+#arrow speed
+ARROW_SPEED = 10
 
 #player sprite offset
 OFFSET = 12

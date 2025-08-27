@@ -85,11 +85,16 @@ while run:
     player.update()
     #updating player weapon
     arrow = bow.update(player)
+    if arrow:
+        arrow_group.add(arrow)
+    for arrow in arrow_group:
+        arrow.update()
 
-
-    #draw player on screen
+    #draw objects on screen
     player.draw(screen)
     bow.draw(screen)
+    for arrow in arrow_group:
+        arrow.draw(screen)
 
     #event handler
     for event in pygame.event.get():
