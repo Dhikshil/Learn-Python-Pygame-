@@ -14,7 +14,7 @@ class Weapon():
         self.last_shot = pygame.time.get_ticks()
 
     def update(self, player):
-        shot_cooldown = 100
+        shot_cooldown = 250
         arrow = None
 
         self.rect.center = player.rect.center

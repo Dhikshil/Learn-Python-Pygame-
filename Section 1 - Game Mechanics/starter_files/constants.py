@@ -7,10 +7,13 @@ SCREEN_HEIGHT = 600
 SCALE = 3
 #player weapon sprite scale
 WEAPON_SCALE = 1.5
+#item sprite scale
+ITEM_SCALE = 3
 
 #colors 
 WHITE = (255, 255, 255)
 RED = (255, 100, 100)
+GAME_INFO_PANEL = (50, 50, 50)
 
 BG = (40, 25, 25)
 
@@ -22,3 +25,4 @@ ARROW_SPEED = 10
 
 #player sprite offset
 OFFSET = 12
+
