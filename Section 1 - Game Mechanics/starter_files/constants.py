@@ -9,6 +9,8 @@ SCALE = 3
 WEAPON_SCALE = 1.5
 #item sprite scale
 ITEM_SCALE = 3
+#potions scale
+POTION_SCALE = 2
 
 #colors 
 WHITE = (255, 255, 255)
