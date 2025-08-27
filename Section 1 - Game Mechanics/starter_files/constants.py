@@ -10,6 +10,7 @@ WEAPON_SCALE = 1.5
 
 #colors 
 WHITE = (255, 255, 255)
+RED = (255, 100, 100)
 
 BG = (40, 25, 25)
 
