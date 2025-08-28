@@ -22,7 +22,7 @@ pygame.display.set_caption("Dungeon Crawler")
 clock = pygame.time.Clock()
 
 #define game variables
-level = 1
+level = 3
 screen_scroll = [ 0, 0]
 
 #define player movement variables
@@ -53,6 +53,9 @@ for x in range(4):
 
 #load health potion
 red_potion = scale_img(pygame.image.load(f'assets/images/items/potion_red.png').convert_alpha(),constants.POTION_SCALE)
+
+#grouping these to make code easier to pass through functions
+item_images = [coin_images, [red_potion]]
 
 #load weapon images
 bow_image = scale_img(pygame.image.load('assets/images/weapons/bow.png').convert_alpha(), constants.WEAPON_SCALE)
@@ -104,6 +107,9 @@ def draw_info():
         else:
             screen.blit(heart_empty, (10 + x * 50, 0))
 
+    #level
+    draw_text("LEVEL: " + str(level), font, 3 * (constants.SCREEN_WIDTH / 5) , 15, constants.WHITE)
+
     #show score
     draw_text(f"X{player.score}", font, SCREEN_WIDTH - 100 , 15 , constants.WHITE)
 
@@ -121,7 +127,7 @@ with open(f"levels/level{level}_data.csv", newline='') as csvfile:
             world_data[x][y] = int(tile)
 
 world = World()
-world.process_data(world_data, tile_list)
+world.process_data(world_data, tile_list, item_images, mob_animations)
 
 #damage text class
 class DamageText(pygame.sprite.Sprite):
@@ -146,17 +152,13 @@ class DamageText(pygame.sprite.Sprite):
             self.kill()
 
 #create player
-player = Character(400,300, mob_animations, 0, 45)
-
-#create enemy
-enemy = Character(200,300, mob_animations, 1, 100)
+player = world.player
 
 #create player's weapon
 bow = Weapon(bow_image, arrow_image)
 
-#create empty enemy list
-enemy_list = []
-enemy_list.append(enemy)
+#extract enemy list from world data
+enemy_list = world.character_list
 
 #create sprite groups
 damage_text_group = pygame.sprite.Group()
@@ -166,10 +168,10 @@ item_group = pygame.sprite.Group()
 #creating item instances
 score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
 item_group.add(score_coin)
-potion = Item(200, 200, 1, [red_potion])
-item_group.add(potion)
-coin = Item(400, 400, 0, coin_images)
-item_group.add(coin)
+
+#add items from level data
+for item in world.item_list:
+    item_group.add(item)
 
 
 #main game loop

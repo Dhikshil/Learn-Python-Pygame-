@@ -4,7 +4,7 @@ import math
 import constants
 
 class Character():
-    def __init__(self, x, y, mob_animations, character_type, health):
+    def __init__(self, x, y, mob_animations, character_type, health, boss, size):
         self.character_type = character_type
         self.score = 0
         self.flip = False
@@ -14,9 +14,10 @@ class Character():
         self.running = False
         self.health = health
         self.alive = True
+        self.boss = boss
 
         self.update_time = pygame.time.get_ticks()
-        self.rect = pygame.Rect(0, 0, constants.TILE_SIZE, constants.TILE_SIZE)
+        self.rect = pygame.Rect(0, 0, constants.TILE_SIZE * size, constants.TILE_SIZE * size)
         self.rect.center = (x, y)
         self.image = self.animation_list[self.action][self.frameIndex]
 

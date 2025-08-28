@@ -1,4 +1,4 @@
-FPS = 45
+FPS = 60
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -31,7 +31,7 @@ ARROW_SPEED = 10
 #player sprite offset
 OFFSET = 12
 
-TILE_SIZE = 16 * SCALE
+TILE_SIZE = 16 * 3
 
 #number of tile types in tiles folder
 TILE_TYPES = 18
