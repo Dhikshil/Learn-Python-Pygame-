@@ -3,6 +3,8 @@ import math
 
 import constants
 
+
+
 class Character():
     def __init__(self, x, y, mob_animations, character_type, health, boss, size):
         self.character_type = character_type
@@ -15,6 +17,9 @@ class Character():
         self.health = health
         self.alive = True
         self.boss = boss
+        self.hit = False
+        self.last_hit = pygame.time.get_ticks()
+        self.stunned = False
 
         self.update_time = pygame.time.get_ticks()
         self.rect = pygame.Rect(0, 0, constants.TILE_SIZE * size, constants.TILE_SIZE * size)
@@ -52,7 +57,7 @@ class Character():
                 if dx < 0:
                     self.rect.left = obstacle[1].right
 
-        self.rect.y += dy#
+        self.rect.y += dy
         for obstacle in obstacle_tiles:
             # check for obstacle collision
             if obstacle[1].colliderect(self.rect):
@@ -83,19 +88,73 @@ class Character():
 
         return screen_scroll
 
-    def ai(self, screen_scroll):
+    def ai(self, screen_scroll, obstacle_tiles, player ):#
+        ai_dx = 0
+        ai_dy = 0
+        clipped_line = ()
+        stun_cooldown = 100
+
         #reposition based on screen scroll
         self.rect.x += screen_scroll[0]
         self.rect.y += screen_scroll[1]
 
+        #create a line of sight from player to enemy
+        line_of_sight = ((self.rect.centerx ,self.rect.centery), (player.rect.centerx ,player.rect.centery))
+        #check if line of sight passes through an obstacle tile
+        for obstacle in obstacle_tiles:
+            if obstacle[1].clipline(line_of_sight):
+                clipped_line = obstacle[1].clipline(line_of_sight)
+
+        #check distance to player
+        dist = math.sqrt((self.rect.centerx - player.rect.centerx)**2 + (self.rect.centery - player.rect.centery)**2)
+        if constants.RANGE_MIN < dist < constants.RANGE_MAX and not clipped_line:
+            if self.rect.centerx > player.rect.centerx:
+                ai_dx = -constants.ENEMY_SPEED
+            if self.rect.centerx < player.rect.centerx:
+                ai_dx = constants.ENEMY_SPEED
+
+            if self.rect.centery > player.rect.centery:
+                ai_dy = -constants.ENEMY_SPEED
+            if self.rect.centery < player.rect.centery:
+                ai_dy = constants.ENEMY_SPEED
+
+        if self.alive:
+            if not self.stunned:
+                #move towards player
+                self.move(ai_dx, ai_dy, obstacle_tiles)
+                #attack player
+                if dist <= constants.ATTACK_RANGE and player.hit == False:
+                    player.health -= 10
+                    player.hit = True
+                    player.last_hit = pygame.time.get_ticks()
+
+            #check if hit
+            if self.hit:
+                self.hit = False
+                self.last_hit = pygame.time.get_ticks()
+                self.stunned = True
+                self.running = False
+                self.update_action(0)
+
+            if (pygame.time.get_ticks() - self.last_hit) >= stun_cooldown:
+                self.stunned = False
+
+
     def update(self):
 
         animation_cooldown = 70
+        hit_cooldown = 1000
 
         #check if character is still alive
         if self.health <= 0:
             self.health = 0
             self.alive = False
+
+        #rest player taking hit
+        if self.character_type == 0:
+            if self.hit == True and  (pygame.time.get_ticks() - self.last_hit) > hit_cooldown:
+                self.hit = False
+
 
         #check action being performed by player
         if self.running:

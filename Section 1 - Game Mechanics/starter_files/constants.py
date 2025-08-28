@@ -28,6 +28,16 @@ SPEED = 5
 #arrow speed
 ARROW_SPEED = 10
 
+#enemy speed
+ENEMY_SPEED = 4
+
+#enemy range to player
+RANGE_MIN = 50
+RANGE_MAX = (SCREEN_HEIGHT + SCREEN_WIDTH) / 4
+
+#enemy attack range
+ATTACK_RANGE = 60
+
 #player sprite offset
 OFFSET = 12
 
@@ -38,3 +48,4 @@ TILE_TYPES = 18
 
 ROWS = 150
 COLS = 150
+

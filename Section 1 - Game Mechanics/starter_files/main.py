@@ -202,7 +202,7 @@ while run:
 
     #update all objects
     for enemy in enemy_list:
-        enemy.ai(screen_scroll)
+        enemy.ai(screen_scroll, world.obstacle_tiles, player)
         enemy.update()
     player.update()
     #updating player weapon
