@@ -22,7 +22,7 @@ class Character():
         self.image = self.animation_list[self.action][self.frameIndex]
 
 
-    def move(self, dx, dy):
+    def move(self, dx, dy, obstacle_tiles):
         screen_scroll = [ 0, 0]
 
         #checking if player is running
@@ -41,8 +41,27 @@ class Character():
             dx = dx * (math.sqrt(2)/2)
             dy = dy * (math.sqrt(2)/2)
 
+        #check for collision with walls
         self.rect.x += dx
-        self.rect.y += dy
+        for obstacle in obstacle_tiles:
+            #check for obstacle collision
+            if obstacle[1].colliderect(self.rect):
+                #check which side collision is from
+                if dx > 0:
+                    self.rect.right = obstacle[1].left
+                if dx < 0:
+                    self.rect.left = obstacle[1].right
+
+        self.rect.y += dy#
+        for obstacle in obstacle_tiles:
+            # check for obstacle collision
+            if obstacle[1].colliderect(self.rect):
+                # check which side collision is from
+                if dy > 0:
+                    self.rect.bottom = obstacle[1].top
+                if dy < 0:
+                    self.rect.top = obstacle[1].bottom
+
 
         #logic only applicable to player
         if self.character_type == 0:

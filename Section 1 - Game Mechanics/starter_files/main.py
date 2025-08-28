@@ -22,7 +22,7 @@ pygame.display.set_caption("Dungeon Crawler")
 clock = pygame.time.Clock()
 
 #define game variables
-level = 3
+level = 1
 screen_scroll = [ 0, 0]
 
 #define player movement variables
@@ -196,7 +196,7 @@ while run:
         dy = constants.SPEED
     
     #move player
-    screen_scroll = player.move( dx, dy)
+    screen_scroll = player.move( dx, dy, world.obstacle_tiles)
     world.update(screen_scroll)
 
 
@@ -210,7 +210,7 @@ while run:
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group:
-        damage, damage_pos = arrow.update(screen_scroll, enemy_list)
+        damage, damage_pos = arrow.update(screen_scroll, enemy_list, world.obstacle_tiles)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, damage, constants.RED)
             damage_text_group.add(damage_text)
