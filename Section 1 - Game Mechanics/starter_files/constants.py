@@ -3,6 +3,9 @@ FPS = 45
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
+#minimum pixels to scroll
+SCROLL_THRESHOLD = SCREEN_WIDTH/4
+
 #player sprite scale
 SCALE = 3
 #player weapon sprite scale

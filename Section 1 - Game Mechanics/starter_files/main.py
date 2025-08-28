@@ -23,6 +23,7 @@ clock = pygame.time.Clock()
 
 #define game variables
 level = 1
+screen_scroll = [ 0, 0]
 
 #define player movement variables
 moving_left = False
@@ -94,14 +95,14 @@ def draw_info():
 
     #draw lives
     half_heart_drawn = False
-    for i in range(5):
-        if player.health >= ((i + 1) * 20):
-            screen.blit(heart_full, (10 + i * 50, 0))
+    for x in range(5):
+        if player.health >= ((x + 1) * 20):
+            screen.blit(heart_full, (10 + x * 50, 0))
         elif (player.health % 20 > 0) and not half_heart_drawn:
-            screen.blit(heart_half, (10 + i * 50, 0))
+            screen.blit(heart_half, (10 + x * 50, 0))
             half_heart_drawn = True
         else:
-            screen.blit(heart_empty, (10 + i * 50, 0))
+            screen.blit(heart_empty, (10 + x * 50, 0))
 
     #show score
     draw_text(f"X{player.score}", font, SCREEN_WIDTH - 100 , 15 , constants.WHITE)
@@ -124,6 +125,7 @@ world.process_data(world_data, tile_list)
 
 #damage text class
 class DamageText(pygame.sprite.Sprite):
+
     def __init__(self, x, y, damage_value, color):
         pygame.sprite.Sprite.__init__(self)
         self.image = font.render(str(damage_value), True, color)
@@ -131,7 +133,11 @@ class DamageText(pygame.sprite.Sprite):
         self.rect.center = (x, y)
         self.counter = 0
 
-    def update(self):
+    def update(self, screen_scroll):
+        #reposition damage text according to screen scroll
+        self.rect.x += screen_scroll[0]
+        self.rect.y += screen_scroll[1]
+
         #move damage text up
         self.rect.y -= 3.5
         #delete text after a few seconds
@@ -140,7 +146,7 @@ class DamageText(pygame.sprite.Sprite):
             self.kill()
 
 #create player
-player = Character(100,100, mob_animations, 0, 45)
+player = Character(400,300, mob_animations, 0, 45)
 
 #create enemy
 enemy = Character(200,300, mob_animations, 1, 100)
@@ -158,7 +164,7 @@ arrow_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 
 #creating item instances
-score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images)
+score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
 item_group.add(score_coin)
 potion = Item(200, 200, 1, [red_potion])
 item_group.add(potion)
@@ -188,24 +194,26 @@ while run:
         dy = constants.SPEED
     
     #move player
-    player.move( dx, dy)
-    #
+    screen_scroll = player.move( dx, dy)
+    world.update(screen_scroll)
 
-    #update character images
-    player.update()
+
+    #update all objects
     for enemy in enemy_list:
+        enemy.ai(screen_scroll)
         enemy.update()
+    player.update()
     #updating player weapon
     arrow = bow.update(player)
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group:
-        damage, damage_pos = arrow.update(enemy_list)
+        damage, damage_pos = arrow.update(screen_scroll, enemy_list)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, damage, constants.RED)
             damage_text_group.add(damage_text)
-    damage_text_group.update()
-    item_group.update(player)
+    damage_text_group.update(screen_scroll)
+    item_group.update(screen_scroll, player)
 
     #draw objects on screen
     world.draw(screen)

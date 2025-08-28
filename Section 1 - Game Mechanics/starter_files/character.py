@@ -22,6 +22,8 @@ class Character():
 
 
     def move(self, dx, dy):
+        screen_scroll = [ 0, 0]
+
         #checking if player is running
         self.running = False
         if dx != 0 or dy != 0:
@@ -41,10 +43,36 @@ class Character():
         self.rect.x += dx
         self.rect.y += dy
 
+        #logic only applicable to player
+        if self.character_type == 0:
+            #update scroll based on player position
+            #move camera left and right
+            if self.rect.right > (constants.SCREEN_WIDTH - constants.SCROLL_THRESHOLD):
+                screen_scroll[0] = constants.SCREEN_WIDTH - constants.SCROLL_THRESHOLD - self.rect.right
+                self.rect.right = constants.SCREEN_WIDTH - constants.SCROLL_THRESHOLD
+            if self.rect.left < constants.SCROLL_THRESHOLD:
+                screen_scroll[0] = constants.SCROLL_THRESHOLD - self.rect.left
+                self.rect.left = constants.SCROLL_THRESHOLD
+            # move camera up and down
+            if self.rect.bottom > (constants.SCREEN_HEIGHT - constants.SCROLL_THRESHOLD):
+                screen_scroll [ 1 ] = constants.SCREEN_HEIGHT - constants.SCROLL_THRESHOLD - self.rect.bottom
+                self.rect.bottom = constants.SCREEN_HEIGHT - constants.SCROLL_THRESHOLD
+            if self.rect.top < constants.SCROLL_THRESHOLD :
+                screen_scroll [ 1 ] = constants.SCROLL_THRESHOLD - self.rect.top
+                self.rect.top = constants.SCROLL_THRESHOLD
+
+        return screen_scroll
+
+    def ai(self, screen_scroll):
+        #reposition based on screen scroll
+        self.rect.x += screen_scroll[0]
+        self.rect.y += screen_scroll[1]
+
     def update(self):
+
         animation_cooldown = 70
 
-        #check if character is still alivc
+        #check if character is still alive
         if self.health <= 0:
             self.health = 0
             self.alive = False
