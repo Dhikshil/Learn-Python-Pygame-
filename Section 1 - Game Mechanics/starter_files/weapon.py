@@ -86,3 +86,43 @@ class Arrow(pygame.sprite.Sprite):
     def draw(self, surface):
         surface.blit(self.image, (self.rect.centerx - int(self.image.get_width() / 2), (self.rect.centery - int(self.image.get_height() / 2))))
 
+class Fireball(pygame.sprite.Sprite):
+    def __init__(self, image, x, y, target_x, target_y):
+        pygame.sprite.Sprite.__init__(self)
+        self.original_image = image
+        self.x_dist = target_x - x
+        self.y_dist = -(target_y - y)
+        self.angle = math.degrees(math.atan2(self.y_dist, self.x_dist))
+        self.image = pygame.transform.rotate(self.original_image, self.angle -90)
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
+        #calculating speeds based on angle it was fired
+        self.dx = math.cos(math.radians(self.angle)) * constants.FIREBALL_SPEED
+        self.dy = -(math.sin(math.radians(self.angle)) * constants.FIREBALL_SPEED)
+
+    def update(self, screen_scroll, player, obstacle_tiles):
+        #reposition based on speed
+        self.rect.x += self.dx + screen_scroll[0]
+        self.rect.y += self.dy + screen_scroll[1]
+
+        #check if fireball collides with walls
+        for obstacle in obstacle_tiles:
+            if obstacle[1].colliderect(self.rect):
+                self.kill()
+
+        #check if fireball has gone off-screen
+        if self.rect.right < 0 or self.rect.left > constants.SCREEN_WIDTH or self.rect.top > constants.SCREEN_HEIGHT or self.rect.bottom < 0:
+            self.kill()
+
+        # check for collisions of fireball and player
+        if player.rect.colliderect ( self.rect ) and player.hit == False :
+            damage = 10 + random.randint ( -5 , 5 )
+            player.health -= damage
+            player.last_hit = pygame.time.get_ticks()
+            player.hit = True
+            self.kill ()
+
+    def draw(self, surface):
+        surface.blit(self.image, (self.rect.centerx - int(self.image.get_width() / 2), (self.rect.centery - int(self.image.get_height() / 2))))
+

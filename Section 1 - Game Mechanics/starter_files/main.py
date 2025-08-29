@@ -23,6 +23,7 @@ clock = pygame.time.Clock()
 
 #define game variables
 level = 1
+show_intro = True
 screen_scroll = [ 0, 0]
 
 #define player movement variables
@@ -60,6 +61,9 @@ item_images = [coin_images, [red_potion]]
 #load weapon images
 bow_image = scale_img(pygame.image.load('assets/images/weapons/bow.png').convert_alpha(), constants.WEAPON_SCALE)
 arrow_image = scale_img(pygame.image.load('assets/images/weapons/arrow.png').convert_alpha(), constants.WEAPON_SCALE)
+
+#enemy weapon
+fireball_image = scale_img(pygame.image.load('assets/images/weapons/fireball.png').convert_alpha(), constants.FIREBALL_SCALE)
 
 #load tile map images
 tile_list = []
@@ -113,21 +117,21 @@ def draw_info():
     #show score
     draw_text(f"X{player.score}", font, SCREEN_WIDTH - 100 , 15 , constants.WHITE)
 
+#function to reset level
+def reset_level():
+    #empty groups
+    damage_text_group.empty()
+    arrow_group.empty()
+    item_group.empty()
+    fireball_group.empty()
 
-#create empty tile list
-world_data = []
-for row in range(constants.ROWS):
-    r = [-1] * constants.COLS
-    world_data.append(r)
-#load in levels and create world
-with open(f"levels/level{level}_data.csv", newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
-    for x, row in enumerate(reader):
-        for y, tile in enumerate(row):
-            world_data[x][y] = int(tile)
+    #create empty tile list
+    data = []
+    for row_int in range(constants.ROWS):
+        row_int = [-1] * constants.COLS
+        data.append(row_int)
 
-world = World()
-world.process_data(world_data, tile_list, item_images, mob_animations)
+    return data
 
 #damage text class
 class DamageText(pygame.sprite.Sprite):
@@ -151,6 +155,45 @@ class DamageText(pygame.sprite.Sprite):
         if self.counter >= 45:
             self.kill()
 
+#class for handling screen fades
+class ScreenFades():
+    def __init__(self, direction, color, speed):
+        self.direction = direction
+        self.color = color
+        self.speed = speed
+        self.fade_counter = 0
+
+    def fade(self):
+        fade_complete = False
+        self.fade_counter += self.speed
+        if self.direction == 1:
+            pygame.draw.rect(screen, self.color, (0 - self.fade_counter, 0, constants.SCREEN_WIDTH // 2, constants.SCREEN_HEIGHT))
+            pygame.draw.rect(screen, self.color, (constants.SCREEN_WIDTH // 2 + self.fade_counter, 0, constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
+
+            pygame.draw.rect(screen, self.color, (0, 0 - self.fade_counter, constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT // 2))
+            pygame.draw.rect(screen, self.color, (0, constants.SCREEN_HEIGHT // 2 + self.fade_counter, constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
+
+        if self.fade_counter >= constants.SCREEN_WIDTH:
+            fade_complete = True
+
+        return fade_complete
+
+#create empty tile list
+world_data = []
+for row in range(constants.ROWS):
+    r = [-1] * constants.COLS
+    world_data.append(r)
+
+#load in levels and create world
+with open(f"levels/level{level}_data.csv", newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',')
+    for x, row in enumerate(reader):
+        for y, tile in enumerate(row):
+            world_data[x][y] = int(tile)
+
+world = World()
+world.process_data(world_data, tile_list, item_images, mob_animations)
+
 #create player
 player = world.player
 
@@ -164,6 +207,7 @@ enemy_list = world.character_list
 damage_text_group = pygame.sprite.Group()
 arrow_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
+fireball_group = pygame.sprite.Group()
 
 #creating item instances
 score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
@@ -173,6 +217,8 @@ item_group.add(score_coin)
 for item in world.item_list:
     item_group.add(item)
 
+#create screen fade
+intro_fade = ScreenFades(1,constants.BLACK, 4)
 
 #main game loop
 run = True
@@ -196,14 +242,17 @@ while run:
         dy = constants.SPEED
     
     #move player
-    screen_scroll = player.move( dx, dy, world.obstacle_tiles)
+    screen_scroll, level_complete = player.move( dx, dy, world.obstacle_tiles, world.portal_tiles)
     world.update(screen_scroll)
 
 
     #update all objects
     for enemy in enemy_list:
-        enemy.ai(screen_scroll, world.obstacle_tiles, player)
-        enemy.update()
+        fireball = enemy.ai(screen_scroll, world.obstacle_tiles, player, fireball_image)
+        if fireball:
+            fireball_group.add(fireball)
+        if enemy.alive:
+            enemy.update()
     player.update()
     #updating player weapon
     arrow = bow.update(player)
@@ -215,6 +264,7 @@ while run:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, damage, constants.RED)
             damage_text_group.add(damage_text)
     damage_text_group.update(screen_scroll)
+    fireball_group.update(screen_scroll, player, world.obstacle_tiles)
     item_group.update(screen_scroll, player)
 
     #draw objects on screen
@@ -223,12 +273,62 @@ while run:
     bow.draw(screen)
     for arrow in arrow_group:
         arrow.draw(screen)
+    for fireball in fireball_group:
+        fireball.draw(screen)
     for enemy in enemy_list:
         enemy.draw(screen)
     damage_text_group.draw(screen)
     item_group.draw(screen)
     draw_info()
     score_coin.draw(screen)
+
+    #check level complete
+    if level_complete:
+        show_intro = True
+        level += 1
+        world_data = reset_level()
+        # load in levels and create world
+        with open(f"levels/level{level}_data.csv", newline='') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',')
+            for x, row in enumerate(reader):
+                for y, tile in enumerate(row):
+                    world_data[x][y] = int(tile)
+        world = World()
+        world.process_data(world_data, tile_list, item_images, mob_animations)
+
+        temp_health = player.health
+        temp_score = player.score
+
+        # create player
+        player = world.player
+
+        player.health = temp_health
+        player.score = temp_score
+
+        # create player's weapon
+        bow = Weapon(bow_image, arrow_image)
+
+        # extract enemy list from world data
+        enemy_list = world.character_list
+
+        # create sprite groups
+        damage_text_group = pygame.sprite.Group()
+        arrow_group = pygame.sprite.Group()
+        item_group = pygame.sprite.Group()
+        fireball_group = pygame.sprite.Group()
+
+        # creating item instances
+        score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
+        item_group.add(score_coin)
+
+        # add items from level data
+        for item in world.item_list:
+            item_group.add(item)
+
+    if show_intro:
+        if intro_fade.fade():
+            show_intro = False
+            intro_fade.fade_counter = 0
 
     #event handler
     for event in pygame.event.get():

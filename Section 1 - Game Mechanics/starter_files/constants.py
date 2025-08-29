@@ -12,23 +12,21 @@ SCALE = 3
 WEAPON_SCALE = 1.5
 #item sprite scale
 ITEM_SCALE = 3
-#potions scale
 POTION_SCALE = 2
+FIREBALL_SCALE = 1
 
 #colors 
 WHITE = (255, 255, 255)
 RED = (255, 100, 100)
+BLACK = (0, 0, 0)
 GAME_INFO_PANEL = (50, 50, 50)
 
 BG = (40, 25, 25)
 
 #player speed
 SPEED = 5
-
-#arrow speed
 ARROW_SPEED = 10
-
-#enemy speed
+FIREBALL_SPEED = 4
 ENEMY_SPEED = 4
 
 #enemy range to player
